@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
+from models import Employee
 # from flask_cors import CORS
 
 app = Flask(__name__)
@@ -11,8 +12,6 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///employees.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
-
-
 
 # Sample data
 # employees = [
@@ -32,55 +31,56 @@ def get_data():
 # GET all employees
 @app.route("/api/employees", methods=["GET"])
 def get_employees():
-    return jsonify(employees)
+    employees = Employee.query.all()
+    return jsonify([emp.to_dict() for emp in employees])
 
 # GET employee bu ID
 @app.route("/api/employees/<int:id>", methods=["GET"])
 def get_employee(id):
-    employee = next((emp for emp in employees if emp["id"] == id), None)
+    employee = Employee.query.get(id)
     if not employee:
         return jsonify({"error": "Employee not found"}),404
-    return jsonify(employee)
+    return jsonify(employee.to_dict)
     
 #POST new employee
 @app.route("/api/employees", methods=["POST"])
 def add_employee():
     data = request.get_json()
-    new_id = max([emp["id"] for emp in employees], default=0) + 1 
-
-    new_emp = {
-        "id": new_id,
-        "name" :data.get("name"),
-        "email": data.get("email"),
-        "position": data.get("position")
-    }
-    employees.append(new_emp)
-    return jsonify(new_emp), 201
+    emp = Employee(
+        name=data["name"],
+        email=data["email"],
+        position=data["position"]
+    )
+    db.session.add(emp)
+    db.session.commit()
+    return jsonify(emp.to_dict()), 201
 
 # PUT update employee
 @app.route("/api/employees/<int:id>", methods=["PUT"])
 def update_employee(id):
     data = request.get_json()
-    employee = next((emp for emp in employees if emp["id"] == id), None)
+    employee = Employee.query.get(id)
     if not employee:
         return jsonify({"error":"The employee was not found"}), 404
     
-    employee.update({
-        "name": data.get("name", employee["name"]),
-        "email": data.get("email", employee["email"]),
-        "position": data.get("position", employee["position"])
-    })
-    return jsonify(employee)
+    data = request.get_json()
+    employee.name = data.get("name", employee.name)
+    employee.email = data.get("name", employee.email)
+    employee.position = data.get("name", employee.position)
+
+    db.session.commit()
+    return jsonify(employee.to_dict()), 201
 
 # DELETE employee
 @app.route("/api/employees/<int:id>", methods=["DELETE"])
 def delete_employee(id):
-    employee = next((emp for emp in employees if emp["id"] == id), None)
+    employee = Employee.query.get(id)
     if not employee:
         return jsonify({"Error":"Employee not found for deletion"}), 404 
     
-    employees.remove(employee)
-    return jsonify({"message":"Employee named " + str(employee["name"]) + " with id " + str(employee["id"]) + " deleted successfully"})
+    db.session.delete(employee)
+    db.session.commit()
+    return jsonify({"message":"Employee named " + employee.name + " with id " + str(employee.id) + " deleted."}), 200
 
 if __name__ == "__main__":
     app.run(debug=True)
