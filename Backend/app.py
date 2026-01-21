@@ -2,10 +2,10 @@ from flask import Flask, jsonify, request
 from extensions import db
 from datetime import date
 from models import Employee
-# from flask_cors import CORS
+from flask_cors import CORS
 
 app = Flask(__name__)
-# CORS(app)
+CORS(app)
 
 
 # SQLite configuration
@@ -18,7 +18,7 @@ db.init_app(app)
 
 from models import Employee
 
-# TODO: Add complete employee columns 
+# TODO: Add fallback for duplicate emails 
 
 # Sample data
 # employees = [
