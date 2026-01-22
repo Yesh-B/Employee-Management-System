@@ -20,21 +20,6 @@ from models import Employee
 
 # TODO: Add fallback for duplicate emails 
 
-# Sample data
-# employees = [
-#     {"id": 1, "name": "James", "email": "jamie@mail.com", "position": "Manager"},
-#     {"id": 2, "name": "Bond", "email": "bondo@mail.com", "position": "Developer"},
-#     {"id": 3, "name": "Luke", "email": "luka@mail.com", "position": "Tester"}
-# ]
-
-
-
-############################################################
-@app.route('/api/data', methods=['GET'])
-def get_data():
-    return jsonify({"message": "Hello from Flaskos!"})
-############################################################
-
 # GET all employees
 @app.route("/api/employees", methods=["GET"])
 def get_employees():

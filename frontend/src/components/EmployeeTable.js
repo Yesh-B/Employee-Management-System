@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { getEmployees, deleteEmployee } from "../services/api";
+import { getEmployees, deleteEmployee, updateEmployee } from "../services/api";
+import EmployeeForm from "./EmployeeForm";
 
 const EmployeeTable = ({ refreshFlag }) => {
   const [employees, setEmployees] = useState([]);
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("");
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+
 
   useEffect(() => {
     const fetchEmployees = async () => {
@@ -29,6 +32,30 @@ const EmployeeTable = ({ refreshFlag }) => {
     }
   };
 
+  const handleEdit = async (employee) => {
+    try {
+        await updateEmployee(employee.id, {
+        is_active: !employee.is_active
+        });
+
+        // Update UI without refetching
+        setEmployees(prev =>
+        prev.map(e =>
+            e.id === employee.id
+            ? { ...e, is_active: !e.is_active }
+            : e
+        )
+        );
+    } catch (error) {
+        alert("Failed to update employee");
+        }
+    };
+
+    const refreshEmployees = async () => {
+        const response = await getEmployees({});
+        setEmployees(response.data);
+    };
+
   return (
     <div>
       <input
@@ -42,6 +69,21 @@ const EmployeeTable = ({ refreshFlag }) => {
         <option value="true">Active</option>
         <option value="false">Inactive</option>
       </select>
+
+      {selectedEmployee && (
+        <div style={{ marginTop: "20px", border: "1px solid #ccc", padding: "10px" }}>
+            <h3>Edit Employee</h3>
+            <EmployeeForm
+            employee={selectedEmployee}
+            onSuccess={() => {
+                setSelectedEmployee(null); // close form after save
+                refreshEmployees();        // re-fetch the table
+            }}
+            onCancel={() => setSelectedEmployee(null)} // close form on cancel
+            />
+        </div>
+      )}
+
 
       <table border="1">
         <thead>
@@ -64,6 +106,7 @@ const EmployeeTable = ({ refreshFlag }) => {
               <td>{e.is_active ? "Yes" : "No"}</td>
               <td>
                 <button onClick={() => handleDelete(e.id)}>Delete</button>
+                <button onClick={() => setSelectedEmployee(e)}>Edit</button>
               </td>
             </tr>
           ))}
