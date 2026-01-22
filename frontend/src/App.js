@@ -14,8 +14,7 @@ function App() {
       <h1>Employee Management System</h1>
       
       {/* Employee Table */}
-      <div style={{ padding: "20px", border: "1px solid #ccc" }}>
-        <h2>Employees</h2>
+      <div style={{ marginTop: "40px" }}>
         <EmployeeTable refreshFlag={refreshFlag} />
       </div>  
 
