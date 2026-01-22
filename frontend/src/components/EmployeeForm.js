@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { addEmployee, updateEmployee } from "../services/api";
 import {
   TextField,
-  Checkbox,
+  Switch,
   FormControlLabel,
   Button,
   Stack,
@@ -56,7 +56,7 @@ const EmployeeForm = ({ employee, onSuccess, onCancel }) => {
       }
       onSuccess();
     } catch (err) {
-      if (err.response && err.response.data && err.response.data.error) {
+      if (err.response?.data?.error) {
         alert(err.response.data.error);
       } else {
         alert("An unexpected error occurred");
@@ -67,7 +67,8 @@ const EmployeeForm = ({ employee, onSuccess, onCancel }) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <Stack spacing={2}>
+      <Stack spacing={2} style={{marginTop: "20px"  }}>
+        {/* Name fields */}
         <Stack direction="row" spacing={2}>
           <TextField
             label="First Name"
@@ -94,17 +95,7 @@ const EmployeeForm = ({ employee, onSuccess, onCancel }) => {
           />
         </Stack>
 
-        <TextField
-          label="Date of Birth"
-          type="date"
-          name="date_of_birth"
-          value={form.date_of_birth}
-          onChange={handleChange}
-          required
-          InputLabelProps={{ shrink: true }}
-          fullWidth
-        />
-
+        {/* Email */}
         <TextField
           label="Email"
           type="email"
@@ -115,17 +106,33 @@ const EmployeeForm = ({ employee, onSuccess, onCancel }) => {
           fullWidth
         />
 
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={form.is_active}
-              onChange={handleChange}
-              name="is_active"
-            />
-          }
-          label="Active"
-        />
+        {/* DOB + Active */}
+        <Stack direction="row" spacing={2} alignItems="center">
+          <TextField
+            label="Date of Birth"
+            type="date"
+            name="date_of_birth"
+            value={form.date_of_birth}
+            onChange={handleChange}
+            required
+            InputLabelProps={{ shrink: true }}
+            fullWidth
+          />
 
+          <FormControlLabel
+            control={
+              <Switch
+                checked={form.is_active}
+                onChange={handleChange}
+                name="is_active"
+                color="success"
+              />
+            }
+            label={form.is_active ? "Active" : "Inactive"}
+          />
+        </Stack>
+
+        {/* Buttons */}
         <Stack direction="row" spacing={2} justifyContent="flex-end">
           <Button variant="contained" color="primary" type="submit">
             {employee ? "Update Employee" : "Add Employee"}
