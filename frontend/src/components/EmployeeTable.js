@@ -6,6 +6,7 @@ const EmployeeTable = ({ refreshFlag }) => {
   const [employees, setEmployees] = useState([]);
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("");
+  const [showModal, setShowModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
 
 
@@ -32,28 +33,14 @@ const EmployeeTable = ({ refreshFlag }) => {
     }
   };
 
-  const handleEdit = async (employee) => {
-    try {
-        await updateEmployee(employee.id, {
-        is_active: !employee.is_active
-        });
-
-        // Update UI without refetching
-        setEmployees(prev =>
-        prev.map(e =>
-            e.id === employee.id
-            ? { ...e, is_active: !e.is_active }
-            : e
-        )
-        );
-    } catch (error) {
-        alert("Failed to update employee");
-        }
-    };
-
     const refreshEmployees = async () => {
         const response = await getEmployees({});
         setEmployees(response.data);
+    };
+
+    const closeModal = () => {
+      setShowModal(false);
+      setSelectedEmployee(null);
     };
 
   return (
@@ -70,20 +57,16 @@ const EmployeeTable = ({ refreshFlag }) => {
         <option value="false">Inactive</option>
       </select>
 
-      {selectedEmployee && (
-        <div style={{ marginTop: "20px", border: "1px solid #ccc", padding: "10px" }}>
-            <h3>Edit Employee</h3>
-            <EmployeeForm
-            employee={selectedEmployee}
-            onSuccess={() => {
-                setSelectedEmployee(null); // close form after save
-                refreshEmployees();        // re-fetch the table
-            }}
-            onCancel={() => setSelectedEmployee(null)} // close form on cancel
-            />
-        </div>
-      )}
-
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
+        <button
+          onClick={() => {
+            setSelectedEmployee(null); // ADD mode
+            setShowModal(true);
+          }}
+        >
+          Add Employee
+        </button>
+      </div>
 
       <table border="1">
         <thead>
@@ -105,15 +88,54 @@ const EmployeeTable = ({ refreshFlag }) => {
               <td>{e.date_of_birth}</td>
               <td>{e.is_active ? "Yes" : "No"}</td>
               <td>
+                <button onClick={() => {setSelectedEmployee(e); setShowModal(true);}}>Edit</button>
                 <button onClick={() => handleDelete(e.id)}>Delete</button>
-                <button onClick={() => setSelectedEmployee(e)}>Edit</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+
+      {showModal && (
+        <div style={overlayStyle}>
+          <div style={modalStyle}>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <h3>{selectedEmployee ? "Edit Employee" : "Add Employee"}</h3>
+              <button onClick={closeModal}>✕</button>
+            </div>
+
+            <EmployeeForm
+              employee={selectedEmployee}
+              onSuccess={() => {
+                closeModal();
+                refreshEmployees();
+              }}
+              onCancel={closeModal}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
+};
+const overlayStyle = {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  width: "100vw",
+  height: "100vh",
+  background: "rgba(0,0,0,0.5)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  zIndex: 1000,
+};
+
+const modalStyle = {
+  background: "#fff",
+  padding: "20px",
+  width: "500px",
+  borderRadius: "8px",
 };
 
 export default EmployeeTable;

@@ -19,12 +19,6 @@ function App() {
         <EmployeeTable refreshFlag={refreshFlag} />
       </div>  
 
-      {/* Employee Form */}
-      <div style= {{ marginBottom: "30", padding: "20px", border: "1px solid #ccc" }}>
-        <h2>Add New Employee</h2>
-        <EmployeeForm onSuccess={triggerRefresh} />
-      </div>
-
 
     </div>
   );
