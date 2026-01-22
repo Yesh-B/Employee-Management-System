@@ -3,6 +3,7 @@ from extensions import db
 from datetime import date
 from models import Employee
 from flask_cors import CORS
+from sqlalchemy.exc import IntegrityError
 
 app = Flask(__name__)
 CORS(app)
@@ -63,8 +64,12 @@ def add_employee():
         email=data["email"],
         is_active=data.get("is_active", True)
     )
-    db.session.add(emp)
-    db.session.commit()
+    try:
+        db.session.add(emp)
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({"error": "Email already exists"}), 400
     return jsonify(emp.to_dict()), 201
 
 # PUT update employee
@@ -82,8 +87,12 @@ def update_employee(id):
     employee.email = data.get("email", employee.email)
     employee.is_active = data.get("is_active", employee.is_active)
 
-    db.session.commit()
-    return jsonify(employee.to_dict()), 201
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({"error": "Email already exists"}), 400
+    return jsonify(employee.to_dict()), 200
 
 # DELETE employee
 @app.route("/api/employees/<int:id>", methods=["DELETE"])

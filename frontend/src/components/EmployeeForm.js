@@ -35,22 +35,37 @@ const EmployeeForm = ({ employee, onSuccess, onCancel }) => {
 
     // Handle form submission (Add or Update)
     const handleSubmit = async (e) => {
-    e.preventDefault();    // prevents page reload, essential for rract forms to work
+        e.preventDefault();    // prevents page reload, essential for rract forms to work
 
-    if (employee) {
-        await updateEmployee(employee.id, form);  // if exists, edit
-    } else {
-        await addEmployee(form);  // if not, add
-        setForm({
-            first_name: "",
-            middle_name: "",
-            last_name: "",
-            date_of_birth: "",
-            email: "",
-            is_active: true,
-        });
-    }    
-    onSuccess(); // trigger table refresh
+        try {
+            if (employee) {
+                await updateEmployee(employee.id, form);  // if exists, edit
+            } else {
+                await addEmployee(form);  // if not, add
+                
+                // Reset form after successful add
+                setForm({
+                    first_name: "",
+                    middle_name: "",
+                    last_name: "",
+                    date_of_birth: "",
+                    email: "",
+                    is_active: true,
+                });
+            } 
+            onSuccess(); // trigger table refresh
+
+        } catch (err) {
+          // Axios throws an error for non-2xx responses
+            if (err.response && err.response.data && err.response.data.error) {
+                // Show the backend error (like duplicate email)
+                alert(err.response.data.error);
+            } else {
+                // Generic fallback
+                alert("An unexpected error occurred");
+                console.error(err);
+            }
+        }
     };
 
     return (
