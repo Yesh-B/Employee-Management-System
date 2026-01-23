@@ -106,4 +106,4 @@ def delete_employee(id):
     return jsonify({"message":"Employee named " + employee.first_name + " " + employee.last_name + " with id " + str(employee.id) + " deleted."}), 200
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
